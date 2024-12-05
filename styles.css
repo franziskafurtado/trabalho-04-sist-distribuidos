@@ -1,0 +1,95 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 1em 0;
+    text-align: center;
+}
+
+.header nav a {
+    color: #fff;
+    margin: 0 1em;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+.header nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 1em;
+}
+
+.carrinho, .pedidos {
+    margin-bottom: 2em;
+}
+
+.produtos {
+    display: grid; /* Ativa o layout em grade */
+    grid-template-columns: repeat(2, 1fr); /* Cria duas colunas de tamanhos iguais */
+    gap: 1em; /* Espaçamento horizontal e vertical entre os produtos */
+}
+.produtos h2, .carrinho h2, .pedidos h2 {
+    border-bottom: 2px solid #333;
+    margin-bottom: 1em;
+}
+
+.produto, .item-carrinho, .pedido {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1em;
+    margin: 1em 0;
+}
+
+
+.produto img {
+    max-width: 150px;
+    margin-right: 1em;
+}
+
+.produto h3{
+    margin: 0.5em 0;
+    font-size: 1.2em;
+}
+
+.produto p{
+    margin: 0.5em 0;
+    font-size: 0.9em;
+}
+.preco {
+    margin: 0.5em 0;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+button {
+    background-color: #e98604;
+    color: #fff;
+    border: none;
+    padding: 0.7em 1.2em;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #e99c38;
+}
+
+.total {
+    font-weight: bold;
+}
+
+.footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1em 0;
+}
