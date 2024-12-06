@@ -1,3 +1,62 @@
+.item-carrinho {
+    display: flex; /* Organiza os itens em linha */
+    align-items: center; /* Alinha verticalmente */
+    border: 3px solid #ddd;
+    border-radius: 5px;
+    padding: 1em;
+    margin: 1em 0;
+}
+
+.img-produto {
+    width: 150px; /* Tamanho fixo da imagem */
+    height: 100px;
+    margin-right: 1em;
+}
+
+.header .titulo-pagina {
+    color: white;
+    font-size: 1.5em; /* Tamanho grande */
+    font-weight: bold;
+    text-align: center;
+    position: absolute; /* Centraliza no header */
+    left: 50%; /* Move para o centro */
+    transform: translateX(-50%); /* Ajusta para manter centralizado */
+    margin: 0;
+}
+
+.img-produto img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ajusta a imagem ao espaço disponível */
+    border-radius: 5px; /* Adiciona cantos arredondados */
+}
+
+.detalhes-carrinho {
+    flex: 1; /* Faz o conteúdo ocupar o restante do espaço */
+}
+
+.detalhes-carrinho h3 {
+    margin: 0.5em 0;
+}
+
+.detalhes-carrinho p {
+    margin: 0.3em 0;
+}
+
+input.quantidade {
+    width: 50px; /* Ajusta o tamanho do campo de quantidade */
+    padding: 0.3em;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.total {
+    font-weight: bold;
+    text-align: right;
+    margin-top: 1em;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;

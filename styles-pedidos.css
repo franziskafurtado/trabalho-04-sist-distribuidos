@@ -1,3 +1,33 @@
+button.adicionar-carrinho {
+    background-color: #0e132e;
+    color: #fff;
+    border: none;
+    padding: 0.7em 1.2em;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+button.adicionar-carrinho:hover {
+    background-color: #27347e;
+}
+
+.pedido p strong.status-criado {
+    color: blue; /* Pedido Criado */
+}
+
+.pedido p strong.status-aprovado {
+    color: green; /* Pagamento Aprovado */
+}
+
+.pedido p strong.status-recusado {
+    color: red; /* Pagamento Recusado */
+}
+
+.pedido p strong.status-enviado {
+    color: orange; /* Pedido Enviado */
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,12 +36,23 @@ body {
 
 .header {
     display: flex; /* Flexbox para alinhar os itens */
-    justify-content: space-between; /* Coloca a logo à esquerda e os links à direita */
-    align-items: center; /* Alinha os itens verticalmente no centro */
+    justify-content: space-between; /* Distribui os elementos no header */
+    align-items: center; /* Centraliza os itens verticalmente */
     background-color: #0e132e;
-    padding: 0em 2em;
+    padding: 0.5em 2em;
+    position: relative;
 }
 
+.header .titulo-pagina {
+    color: white;
+    font-size: 1.5em; /* Tamanho grande */
+    font-weight: bold;
+    text-align: center;
+    position: absolute; /* Centraliza no header */
+    left: 50%; /* Move para o centro */
+    transform: translateX(-50%); /* Ajusta para manter centralizado */
+    margin: 0;
+}
 
 .header .logo img {
     width: 200px; /* Ajuste o tamanho da logo conforme necessário */
@@ -19,15 +60,7 @@ body {
 
 .header nav {
     display: flex; /* Flexbox para os links do menu */
-}
-.header nav a {
-    display: flex; /* Para alinhar imagens e textos */
-    align-items: center; /* Centraliza verticalmente */
-    justify-content: center; /* Centraliza horizontalmente o conteúdo */
-    margin-left: 1em; /* Espaço entre os links */
-    text-decoration: none; /* Remove sublinhado */
-    color: #fff; /* Preserva a cor do texto, se necessário */
-    width: 150px;
+    align-items: center;
 }
 
 .header nav a img {
@@ -36,15 +69,6 @@ body {
     cursor: pointer;
 }
 
-.header nav a[href="#pedidos"] {
-    font-size: 1.2em; /* Aumenta o tamanho da fonte */
-}
-/* .header nav a {
-    color: #fff;
-    margin-left: 1em; 
-    text-decoration: none;
-    font-size: 1.2em;
-} */
 
 .header nav a:hover {
     text-decoration: underline;
