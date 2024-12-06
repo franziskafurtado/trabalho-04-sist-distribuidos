@@ -16,17 +16,32 @@ body {
     width: 200px; /* Ajuste o tamanho da logo conforme necessário */
 }
 
-
 .header nav {
     display: flex; /* Flexbox para os links do menu */
 }
-
 .header nav a {
-    color: #fff;
+    display: flex; /* Para alinhar imagens e textos */
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente o conteúdo */
     margin-left: 1em; /* Espaço entre os links */
+    text-decoration: none; /* Remove sublinhado */
+    color: #fff; /* Preserva a cor do texto, se necessário */
+    width: 150px;
+}
+
+.header nav a img {
+    display: block; /* Garante que a imagem não herde margens extras */
+}
+
+.header nav a[href="#pedidos"] {
+    font-size: 1.5em; /* Aumenta o tamanho da fonte */
+}
+/* .header nav a {
+    color: #fff;
+    margin-left: 1em; 
     text-decoration: none;
     font-size: 1.2em;
-}
+} */
 
 .header nav a:hover {
     text-decoration: underline;
@@ -58,7 +73,7 @@ main {
 
 .produtos {
     display: flex; /* Ativa o layout em grade */
-    justify-content: space-between;
+    justify-content: space-around;
     flex-wrap: wrap;
 }
 .produto {
@@ -70,7 +85,7 @@ main {
 }
 
 .produto, .item-carrinho, .pedido {
-    border: 3px solid #ddd;
+    border: 1.5px solid #0e132e;
     border-radius: 5px;
     padding: 1em;
     margin: 1em 0;
@@ -98,18 +113,21 @@ main {
     margin: 0.5em 0;
     font-size: 0.9em;
 }
-.preco {
+.produto .preco {
     margin: 0.5em 0;
-    font-size: 0.9em;
+    font-size: 1.1em;
     font-weight: bold;
 }
 button {
     background-color: #0e132e;
     color: #fff;
     border: none;
-    padding: 0.7em 1.2em;
-    border-radius: 10px;
+    /* padding: 0.7em 1.2em;
+    border-radius: 10px; */
     cursor: pointer;
+    padding: 0.9em 1.4em; /* Aumenta o espaço interno do botão */
+    font-size: 1em; /* Aumenta o tamanho da fonte */
+    border-radius: 12px; /* (Opcional) Ajusta a borda arredondada */
 }
 
 button:hover {
