@@ -1,22 +1,29 @@
-/* styles.css */
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    line-height: 1.6;
 }
 
 .header {
-    background-color: #333;
-    color: #fff;
-    padding: 1em 0;
-    text-align: center;
+    display: flex; /* Flexbox para alinhar os itens */
+    justify-content: space-between; /* Coloca a logo à esquerda e os links à direita */
+    align-items: center; /* Alinha os itens verticalmente no centro */
+    background-color: #0e132e;
+    padding: 0em 2em;
+}
+
+.header .logo img {
+    width: 200px; /* Ajuste o tamanho da logo conforme necessário */
+}
+
+
+.header nav {
+    display: flex; /* Flexbox para os links do menu */
 }
 
 .header nav a {
     color: #fff;
-    margin: 0 1em;
+    margin-left: 1em; /* Espaço entre os links */
     text-decoration: none;
     font-size: 1.2em;
 }
@@ -26,7 +33,23 @@ body {
 }
 
 main {
-    padding: 1em;
+    padding: 3px 0 0 0;
+}
+
+.banner {
+    width: 100vw; /* Ocupa 100% da largura da janela do navegador */
+    height: auto; /* Ajusta a altura automaticamente */
+    margin: 0; /* Remove margens */
+    padding: 0; /* Remove padding */
+    display: flex; /* Garante que o conteúdo interno se ajuste */
+    justify-content: center; /* Centraliza o conteúdo horizontalmente */
+    align-items: center; /* Centraliza o conteúdo verticalmente */
+}
+
+.banner img {
+    width: 100%; /* Ajusta a imagem para caber no banner */
+    height: auto; /* Mantém a proporção da imagem */
+    display: block; /* Remove espaçamento abaixo da imagem */
 }
 
 .carrinho, .pedidos {
@@ -34,26 +57,36 @@ main {
 }
 
 .produtos {
-    display: grid; /* Ativa o layout em grade */
-    grid-template-columns: repeat(2, 1fr); /* Cria duas colunas de tamanhos iguais */
-    gap: 1em; /* Espaçamento horizontal e vertical entre os produtos */
+    display: flex; /* Ativa o layout em grade */
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.produto {
+    width: 46%;
 }
 .produtos h2, .carrinho h2, .pedidos h2 {
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid #000000;
     margin-bottom: 1em;
 }
 
 .produto, .item-carrinho, .pedido {
-    border: 1px solid #ddd;
+    border: 3px solid #ddd;
     border-radius: 5px;
     padding: 1em;
     margin: 1em 0;
 }
 
+.img-produto {
+    width: 300px; /* Define uma largura fixa */
+    height: 200px; /* Define uma altura fixa */
+}
 
 .produto img {
-    max-width: 150px;
     margin-right: 1em;
+    width: 100%; /* Ajuste o tamanho da logo conforme necessário  */
+    height: 100%;
+    object-fit: contain; /* Ajusta a imagem para preencher o espaço, cortando se necessário */
+    border-radius: 5px; /* (Opcional) Adiciona cantos arredondados */
 }
 
 .produto h3{
@@ -71,7 +104,7 @@ main {
     font-weight: bold;
 }
 button {
-    background-color: #e98604;
+    background-color: #0e132e;
     color: #fff;
     border: none;
     padding: 0.7em 1.2em;
@@ -80,7 +113,7 @@ button {
 }
 
 button:hover {
-    background-color: #e99c38;
+    background-color: #27347e;
 }
 
 .total {
@@ -88,7 +121,7 @@ button:hover {
 }
 
 .footer {
-    background-color: #333;
+    background-color: #0e132e;
     color: #fff;
     text-align: center;
     padding: 1em 0;
