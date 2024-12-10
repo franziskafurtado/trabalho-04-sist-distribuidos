@@ -35,12 +35,6 @@ function carregarCarrinho() {
     `;
     secaoCarrinho.appendChild(totalDiv);
 
-    // Adiciona evento ao botão "Realizar Pagamento"
-    const botaoPagamento = totalDiv.querySelector('.finalizar-compra');
-    botaoPagamento.addEventListener('click', () => {
-        console.log('Usuário clicou em "Realizar Pagamento"');
-    });
-
     // Garante que os eventos sejam reaplicados
     adicionarEventos();
 }
@@ -49,8 +43,6 @@ function carregarCarrinho() {
 function removerItem(event) {
     const index = event.target.dataset.index;
     let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-
-    console.log(`Removendo o item de índice ${index}`); // Log para o console
 
     carrinho.splice(index, 1); // Remove o item pelo índice
     localStorage.setItem('carrinho', JSON.stringify(carrinho)); // Atualiza o localStorage

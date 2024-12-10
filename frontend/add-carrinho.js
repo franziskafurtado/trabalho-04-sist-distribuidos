@@ -5,19 +5,28 @@ function adicionarAoCarrinho(event) {
     const precoProduto = produto.querySelector('.preco').innerText;
     const imagemProduto = produto.querySelector('img').src;
 
-    const itemCarrinho = {
-        nome: nomeProduto,
-        preco: precoProduto,
-        imagem: imagemProduto,
-        quantidade: 1
-    };
-
-    console.log(`Produto adicionado ao carrinho: ${nomeProduto}, Preço: ${precoProduto}`);
-
     let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-    carrinho.push(itemCarrinho);
 
+    // Verifica se o produto já está no carrinho
+    const itemExistente = carrinho.find(item => item.nome === nomeProduto);
+
+    if (itemExistente) {
+        // Incrementa a quantidade se o produto já estiver no carrinho
+        itemExistente.quantidade += 1;
+    } else {
+        // Adiciona o produto ao carrinho se for novo
+        const itemCarrinho = {
+            nome: nomeProduto,
+            preco: precoProduto,
+            imagem: imagemProduto,
+            quantidade: 1
+        };
+        carrinho.push(itemCarrinho);
+    }
+
+    // Atualiza o localStorage
     localStorage.setItem('carrinho', JSON.stringify(carrinho));
+    console.log(`Produto adicionado ao carrinho: ${nomeProduto}, Preço: ${precoProduto}`);
 }
 
 // Adiciona o evento de clique aos botões de "Adicionar ao carrinho"
