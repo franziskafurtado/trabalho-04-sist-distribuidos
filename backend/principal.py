@@ -1,5 +1,3 @@
-#pip install flask
-#pip3 install pika
 from flask import Flask, request, jsonify, Response
 import pika
 import json
