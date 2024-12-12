@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, render_template, send_from_directory
 import pika
 import json
 from threading import Thread
 from queue import Queue
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
 
 # Configuração do RabbitMQ
 RABBITMQ_HOST = 'localhost'
@@ -39,8 +40,17 @@ products = {
 carts = {}  # {user_id: {product_id: quantity}}
 orders = {}  # {order_id: {user_id, products, status}}
 
-
 sse_queue = Queue()
+
+# Rota para servir a página inicial
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Rota para servir arquivos estáticos
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(app.static_folder, filename)
 
 @app.route('/products', methods=['GET'])
 def get_products():
@@ -102,7 +112,7 @@ def manage_orders():
 
             # Adiciona à fila SSE
             sse_queue.put({"event": "order_deleted", "data": {"order_id": order_id, **order}})
-            
+
             return jsonify({"message": "Order deleted"})
         else:
             return jsonify({"error": "Order not found"}), 404
@@ -122,6 +132,22 @@ def sse_stream():
             message = sse_queue.get()
             yield f"event: {message['event']}\ndata: {json.dumps(message['data'])}\n\n"
     return Response(generate(), content_type='text/event-stream')
+
+@app.route('/save-cart', methods=['POST'])
+def save_cart():
+    data = request.json  # Espera receber os dados do carrinho no corpo da requisição
+    if not data:
+        return jsonify({"error": "Nenhum dado recebido"}), 400
+
+    # Aqui você pode processar os dados do carrinho
+    user_id = data.get("user_id")
+    cart = data.get("cart")  # Dados do carrinho no formato JSON
+
+    if user_id and cart:
+        carts[user_id] = cart
+        return jsonify({"message": "Carrinho salvo com sucesso"}), 200
+    else:
+        return jsonify({"error": "Dados incompletos"}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
