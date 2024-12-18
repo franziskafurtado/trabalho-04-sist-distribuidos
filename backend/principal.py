@@ -4,6 +4,7 @@ import json
 from threading import Thread
 from queue import Queue
 import os
+import atexit
 
 app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
 
@@ -13,23 +14,48 @@ EXCHANGE_NAME = 'ecommerce'
 QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
 
-# Inicializando RabbitMQ (sem SSL) 
+# Inicializando RabbitMQ
 def init_rabbitmq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    return connection, channel
+    global CONNECTION, CHANNEL
+    CONNECTION = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+    CHANNEL = CONNECTION.channel()
+    CHANNEL.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
+    atexit.register(close_connection)
+
+def close_connection():
+    global CONNECTION
+    CONNECTION.close()
+    print("Conexão encerrada.")
+
+def process_events(queue_name, channel):
+    def callback(ch, method, properties, body):
+        event = json.loads(body)
+        print(f"Evento recebido no {queue_name}: {event}")
+
+        # if queue_name == QUEUE_NAME_CREATED:
+        #     handle_order_created(event)
+        # elif queue_name == QUEUE_NAME_DELETED:
+        #     handle_order_deleted(event)
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    channel.start_consuming()
+
+def start_event_consumers():
+    global CHANNEL
+    Thread(target=process_events, args=(QUEUE_NAME_CREATED,CHANNEL), daemon=True).start()
+    Thread(target=process_events, args=(QUEUE_NAME_DELETED,CHANNEL), daemon=True).start()
 
 # Publicando mensagem para no tópico
 def publish_message(routing_key, message):
-    connection, channel = init_rabbitmq()
-    channel.basic_publish(
+    global CHANNEL
+    CHANNEL.basic_publish(
         exchange=EXCHANGE_NAME,
         routing_key=routing_key,
         body=json.dumps(message),
         properties=pika.BasicProperties(content_type='application/json')
     )
-    connection.close()
 
 products = {
     1: {"name": "Teclado Mecânico", "price": 199.75},
@@ -150,4 +176,7 @@ def save_cart():
         return jsonify({"error": "Dados incompletos"}), 400
 
 if __name__ == '__main__':
+    init_rabbitmq()
     app.run(debug=True, threaded=True)
+
+    

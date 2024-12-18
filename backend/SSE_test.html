@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo de SSE</title>
+</head>
+<body>
+    <h1>Notificações em Tempo Real</h1>
+    <div id="notifications"></div>
+
+    <script>
+        const eventSource = new EventSource('http://localhost:8000/events');  // Verifique a porta
+
+        eventSource.onmessage = function(event) {
+            const notificationsDiv = document.getElementById('notifications');
+            const newNotification = document.createElement('p');
+            newNotification.textContent = `Nova mensagem recebida: ${event.data}`;
+            notificationsDiv.appendChild(newNotification);
+        };
+
+        eventSource.onerror = function(error) {
+            console.error('Erro SSE:', error);
+            eventSource.close();
+        };
+    </script>
+</body>
+</html>
