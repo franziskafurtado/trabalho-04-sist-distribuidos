@@ -151,14 +151,6 @@ def get_order(order_id):
     else:
         return jsonify({"error": "Pedido não encontrado"}), 404
 
-@app.route('/events', methods=['GET'])
-def sse_stream():
-    def generate():
-        while True:
-            message = sse_queue.get()
-            yield f"event: {message['event']}\ndata: {json.dumps(message['data'])}\n\n"
-    return Response(generate(), content_type='text/event-stream')
-
 @app.route('/save-cart', methods=['POST'])
 def save_cart():
     data = request.json  # Espera receber os dados do carrinho no corpo da requisição
@@ -177,6 +169,6 @@ def save_cart():
 
 if __name__ == '__main__':
     init_rabbitmq()
-    app.run(debug=True, threaded=True)
+    app.run(debug=True, threaded=True, port=5000)
 
     
