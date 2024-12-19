@@ -1,5 +1,6 @@
 import pika
 import json
+import time
 
 RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
@@ -16,6 +17,7 @@ def publish_event(routing_key, message):
     )
     connection.close()
     print(f"Mensagem enviada para o tópico '{routing_key}': {message}")
+    time.sleep(1)
 
 if __name__ == "__main__":
     test_events = [

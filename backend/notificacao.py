@@ -3,17 +3,21 @@ import json
 from flask import Flask, Response
 from queue import Queue
 from threading import Thread
+import atexit
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Configuração do RabbitMQ
 RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
 
+# Lista de tópicos específicos
 TOPICS = [
-    'Pedidos_Criados',
     'Pagamentos_Aprovados',
     'Pagamentos_Recusados',
+    'Pedidos_Criados',
     'Pedidos_Enviados'
 ]
 
@@ -22,64 +26,54 @@ notification_queue = Queue()
 
 # Inicializando RabbitMQ
 def init_rabbitmq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    return connection, channel
+    global CONNECTION, CHANNEL
+    CONNECTION = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+    CHANNEL = CONNECTION.channel()
+    CHANNEL.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
+    atexit.register(close_connection)
 
-# Consumindo mensagens de todos os tópicos
-def consume_topics():
-    connection, channel = init_rabbitmq()
+def close_connection():
+    global CONNECTION
+    if CONNECTION.is_open:
+        CONNECTION.close()
+        print("Conexão encerrada.")
 
-    # Cria e vincula uma fila temporária para consumir todos os tópicos
-    result = channel.queue_declare(queue='', exclusive=True)
+def process_events():
+    # Declarar uma fila temporária que recebe mensagens dos tópicos especificados
+    result = CHANNEL.queue_declare(queue='', exclusive=True)
     queue_name = result.method.queue
 
+    # Vincular a fila aos tópicos específicos
     for topic in TOPICS:
-        channel.queue_bind(exchange=EXCHANGE_NAME, queue=queue_name, routing_key=topic)
-
-    print("Aguardando eventos de todos os tópicos...")
+        CHANNEL.queue_bind(exchange=EXCHANGE_NAME, queue=queue_name, routing_key=topic)
 
     def callback(ch, method, properties, body):
-        try:
-            message = json.loads(body)
-            order_id = message.get("order_id")
-            status = message.get("status")
-            print(f"Notificação recebida: Pedido {order_id}, Status: {status}")
+        event = json.loads(body)
+        print(f"Evento recebido: {event}")
+        notification_queue.put(event)  # Colocar na fila de notificações
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-            # Adiciona notificação à fila
-            notification_queue.put({"order_id": order_id, "status": status})
-
-            # Confirmação manual
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        except Exception as e:
-            print(f"Erro ao processar mensagem: {e}")
-            ch.basic_nack(delivery_tag=method.delivery_tag)
-
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
-
+    CHANNEL.basic_consume(queue=queue_name, on_message_callback=callback)
     try:
-        channel.start_consuming()
+        CHANNEL.start_consuming()
     except KeyboardInterrupt:
-        print("Encerrando o consumidor...")
-        channel.stop_consuming()
-        connection.close()
+        CHANNEL.stop_consuming()
 
 # Rota SSE para notificar o frontend
 @app.route('/notifications')
 def notifications():
     def generate():
         while True:
-            notification = notification_queue.get()
-            yield f"data: {json.dumps(notification)}\n\n"
+            try:
+                notification = notification_queue.get()
+                yield f"data: {json.dumps(notification)}\n\n"
+            except GeneratorExit:  # Cliente desconectado
+                print("Cliente desconectado.")
+                break
 
     return Response(generate(), content_type='text/event-stream')
 
-# Inicia o consumidor em uma thread separada
-def start_consumer():
-    consumer_thread = Thread(target=consume_topics, daemon=True)
-    consumer_thread.start()
-
 if __name__ == "__main__":
-    start_consumer()
-    app.run(debug=True, threaded=True)
+    init_rabbitmq()
+    Thread(target=process_events, daemon=True).start()
+    app.run(debug=True, threaded=True, host="127.0.0.1", port=8000)
