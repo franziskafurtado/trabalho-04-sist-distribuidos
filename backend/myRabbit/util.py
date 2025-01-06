@@ -32,7 +32,7 @@ def process_events(host, queue_name, func_callback):
         event = json.loads(body)
         print(f"Evento recebido no {queue_name}: {event}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
-        return func_callback(queue_name)
+        return func_callback(event)
 
     channel.basic_consume(queue=queue_name, on_message_callback=callback)
     channel.start_consuming()  # Inicia o consumo

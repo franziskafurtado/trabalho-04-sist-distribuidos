@@ -1,5 +1,3 @@
-import pika
-import json
 import time
 from myRabbit import *
 
@@ -17,6 +15,6 @@ if __name__ == "__main__":
     ]
 
     for event in test_events:
-        print(f"Publicando evento no tópico '{event['routing_key']}'...")      
+        # print(f"Publicando evento no tópico '{event['routing_key']}'...")      
         publish_message(channel, EXCHANGE_NAME, event["routing_key"], event["message"])
         time.sleep(1)
