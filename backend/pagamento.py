@@ -16,8 +16,8 @@ QUEUE_NAME_REJECTED = 'Pagamentos_Recusados'
 QUEUE_NAME_CREATED = 'Pedidos_Criados'
 
 # URL do Webhook do sistema de pagamento externo
-PAYMENT_GATEWAY_URL = 'http://external-payment-system.com/webhook'
-
+#PAYMENT_GATEWAY_URL = 'http://external-payment-system.com/webhook'
+#
 # Dados simulados para transações (em um cenário real, deve-se usar um banco de dados)
 transactions = {}
 transaction_id_counter = 1
@@ -40,12 +40,7 @@ def process_events(queue_name, channel):
     def callback(ch, method, properties, body):
         event = json.loads(body)
         print(f"Evento recebido no {queue_name}: {event}")
-
-        # if queue_name == QUEUE_NAME_CREATED:
-        #     handle_order_created(event)
-        # elif queue_name == QUEUE_NAME_DELETED:
-        #     handle_order_deleted(event)
-
+        process_payment(event["transaction_id"], event["amount"], event["buyer_info"])
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     channel.basic_consume(queue=queue_name, on_message_callback=callback)

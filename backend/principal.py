@@ -5,6 +5,7 @@ from threading import Thread
 from queue import Queue
 import os
 import atexit
+from myRabbit import *
 
 app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
 
@@ -13,49 +14,6 @@ RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
 QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
-
-# Inicializando RabbitMQ
-def init_rabbitmq():
-    global CONNECTION, CHANNEL
-    CONNECTION = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    CHANNEL = CONNECTION.channel()
-    CHANNEL.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    atexit.register(close_connection)
-
-def close_connection():
-    global CONNECTION
-    CONNECTION.close()
-    print("Conexão encerrada.")
-
-def process_events(queue_name, channel):
-    def callback(ch, method, properties, body):
-        event = json.loads(body)
-        print(f"Evento recebido no {queue_name}: {event}")
-
-        # if queue_name == QUEUE_NAME_CREATED:
-        #     handle_order_created(event)
-        # elif queue_name == QUEUE_NAME_DELETED:
-        #     handle_order_deleted(event)
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
-    channel.start_consuming()
-
-def start_event_consumers():
-    global CHANNEL
-    Thread(target=process_events, args=(QUEUE_NAME_CREATED,CHANNEL), daemon=True).start()
-    Thread(target=process_events, args=(QUEUE_NAME_DELETED,CHANNEL), daemon=True).start()
-
-# Publicando mensagem para no tópico
-def publish_message(routing_key, message):
-    global CHANNEL
-    CHANNEL.basic_publish(
-        exchange=EXCHANGE_NAME,
-        routing_key=routing_key,
-        body=json.dumps(message),
-        properties=pika.BasicProperties(content_type='application/json')
-    )
 
 products = {
     1: {"name": "Teclado Mecânico", "price": 199.75},
@@ -117,7 +75,7 @@ def manage_orders():
         orders[order_id] = order
 
         # Publica evento para Pedidos_Criados
-        publish_message(f'{QUEUE_NAME_CREATED}', {"order_id": order_id, **order})
+        publish_message(channel, f'{QUEUE_NAME_CREATED}', {"order_id": order_id, **order})
 
         # Adiciona à fila SSE
         sse_queue.put({"event": "order_created", "data": {"order_id": order_id, **order}})
@@ -134,7 +92,7 @@ def manage_orders():
             order = orders.pop(order_id)
 
             # Publica o evento para Pedidos_Excluídos
-            publish_message(f'{QUEUE_NAME_DELETED}', {"order_id": order_id, **order})
+            publish_message(channel ,f'{QUEUE_NAME_DELETED}', {"order_id": order_id, **order})
 
             # Adiciona à fila SSE
             sse_queue.put({"event": "order_deleted", "data": {"order_id": order_id, **order}})
@@ -168,7 +126,7 @@ def save_cart():
         return jsonify({"error": "Dados incompletos"}), 400
 
 if __name__ == '__main__':
-    init_rabbitmq()
+    connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
     app.run(debug=True, threaded=True, port=5000)
 
     

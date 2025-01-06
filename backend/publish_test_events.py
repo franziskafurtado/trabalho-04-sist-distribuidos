@@ -1,23 +1,12 @@
 import pika
 import json
 import time
+from myRabbit import *
 
 RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
 
-def publish_event(routing_key, message):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    channel.basic_publish(
-        exchange=EXCHANGE_NAME,
-        routing_key=routing_key,
-        body=json.dumps(message),
-        properties=pika.BasicProperties(content_type='application/json')
-    )
-    connection.close()
-    print(f"Mensagem enviada para o tópico '{routing_key}': {message}")
-    time.sleep(1)
+connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
 
 if __name__ == "__main__":
     test_events = [
@@ -28,4 +17,6 @@ if __name__ == "__main__":
     ]
 
     for event in test_events:
-        publish_event(event["routing_key"], event["message"])
+        print(f"Publicando evento no tópico '{event['routing_key']}'...")      
+        publish_message(channel, EXCHANGE_NAME, event["routing_key"], event["message"])
+        time.sleep(1)

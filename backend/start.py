@@ -8,10 +8,9 @@ def startMultipleInstances(executables):
 
 executable_to_run = [
     "estoque.py",
-    # ,
-    # "pagamento.py",
-    # "entrega.py",
-    # "notificacao.py"
+    "pagamento.py",
+    "entrega.py",
+    "notificacao.py",
     "principal.py"
 ]
 

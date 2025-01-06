@@ -1,10 +1,8 @@
-import pika
 import json
 from flask import Flask, Response
 from queue import Queue
-from threading import Thread
-import atexit
 from flask_cors import CORS
+from myRabbit import *
 
 app = Flask(__name__)
 CORS(app)
@@ -13,51 +11,20 @@ CORS(app)
 RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
 
+def teste(msg):
+    print('teste:', msg)
+
 # Lista de tópicos específicos
-TOPICS = [
-    'Pagamentos_Aprovados',
-    'Pagamentos_Recusados',
-    'Pedidos_Criados',
-    'Pedidos_Enviados'
+CONSUMER_TOPICS = [
+    {'queueName': 'Pagamentos_Aprovados', 'func': teste},
+    {'queueName': 'Pagamentos_Recusados', 'func': teste},
+    {'queueName': 'Pedidos_Criados', 'func': teste},
+    {'queueName': 'Pedidos_Enviados', 'func': teste},
 ]
 
 # Fila para armazenar notificações
 notification_queue = Queue()
 
-# Inicializando RabbitMQ
-def init_rabbitmq():
-    global CONNECTION, CHANNEL
-    CONNECTION = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    CHANNEL = CONNECTION.channel()
-    CHANNEL.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    atexit.register(close_connection)
-
-def close_connection():
-    global CONNECTION
-    if CONNECTION.is_open:
-        CONNECTION.close()
-        print("Conexão encerrada.")
-
-def process_events():
-    # Declarar uma fila temporária que recebe mensagens dos tópicos especificados
-    result = CHANNEL.queue_declare(queue='', exclusive=True)
-    queue_name = result.method.queue
-
-    # Vincular a fila aos tópicos específicos
-    for topic in TOPICS:
-        CHANNEL.queue_bind(exchange=EXCHANGE_NAME, queue=queue_name, routing_key=topic)
-
-    def callback(ch, method, properties, body):
-        event = json.loads(body)
-        print(f"Evento recebido: {event}")
-        notification_queue.put(event)  # Colocar na fila de notificações
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    CHANNEL.basic_consume(queue=queue_name, on_message_callback=callback)
-    try:
-        CHANNEL.start_consuming()
-    except KeyboardInterrupt:
-        CHANNEL.stop_consuming()
 
 # Rota SSE para notificar o frontend
 @app.route('/notifications')
@@ -74,6 +41,6 @@ def notifications():
     return Response(generate(), content_type='text/event-stream')
 
 if __name__ == "__main__":
-    init_rabbitmq()
-    Thread(target=process_events, daemon=True).start()
+    connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
+    start_event_consumers(RABBITMQ_HOST, CONSUMER_TOPICS)
     app.run(debug=True, threaded=True, host="127.0.0.1", port=8000)
