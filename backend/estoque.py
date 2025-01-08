@@ -1,7 +1,5 @@
 from flask import Flask, jsonify, request
-import pika
-import json
-from threading import Thread
+from myRabbit import *
 
 app = Flask(__name__)
  
@@ -18,54 +16,6 @@ inventory = {
     3: {"name": "Monitor Full HD", "stock": 20},
     4: {"name": "Headset", "stock": 60}
 }
-
-# Inicializando RabbitMQ
-def init_rabbitmq():
-    global CONNECTION, CHANNEL
-    CONNECTION = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    CHANNEL = CONNECTION.channel()
-    CHANNEL.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic', durable=True)
-    CHANNEL.queue_declare(queue=QUEUE_NAME_CREATED, durable=True)
-    CHANNEL.queue_declare(queue=QUEUE_NAME_DELETED, durable=True)
-
-def close_connection():
-    global CONNECTION
-    CONNECTION.close()
-    print("Conexão encerrada.")
-
-def process_events(queue_name):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.queue_declare(queue=queue_name, durable=True)
-
-    def callback(ch, method, properties, body):
-        event = json.loads(body)
-        print(f"Evento recebido no {queue_name}: {event}")
-
-        if queue_name == QUEUE_NAME_CREATED:
-            handle_order_created(event)
-        elif queue_name == QUEUE_NAME_DELETED:
-            handle_order_deleted(event)
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
-    channel.start_consuming()  # Inicia o consumo
-
-def start_event_consumers():
-    global CHANNEL
-    Thread(target=process_events, args=(QUEUE_NAME_CREATED,), daemon=True).start()
-    Thread(target=process_events, args=(QUEUE_NAME_DELETED,), daemon=True).start()
-
-# Publicando mensagem para no tópico
-def publish_message(routing_key, message):
-    global CHANNEL
-    CHANNEL.basic_publish(
-        exchange=EXCHANGE_NAME,
-        routing_key=routing_key,
-        body=json.dumps(message),
-        properties=pika.BasicProperties(content_type='application/json')
-    )
 
 # Lógica para atualizar o estoque quando um pedido é criado
 def handle_order_created(event):
@@ -84,6 +34,11 @@ def handle_order_deleted(event):
             inventory[product_id]["stock"] += quantity
             print(f"Produto: {inventory[product_id]["name"]} adicionado {quantity}, estoque atual {inventory[product_id]["stock"]} ")
 
+CONSUMER_TOPICS = [
+    {'queueName': 'Pedidos_Criados', 'func': handle_order_created},
+    {'queueName': 'Pedidos_Excluídos', 'func': handle_order_deleted}
+]
+
 # Endpoint REST para consultar o estoque
 @app.route('/inventory', methods=['GET'])
 def get_inventory():
@@ -99,6 +54,6 @@ def get_product(product_id):
         return jsonify({"error": "Produto não encontrado"}), 404
 
 if __name__ == "__main__":
-    init_rabbitmq()
-    start_event_consumers()
+    connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
+    start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
     app.run(debug=True, port=7000)

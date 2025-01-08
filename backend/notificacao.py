@@ -14,10 +14,6 @@ EXCHANGE_NAME = 'ecommerce'
 # Fila para armazenar notificações
 notification_queue = Queue()
 
-
-def teste(msg):
-    print('teste:', msg)
-
 def Pagamentos_Aprovados(event):
     notification = f'Pagamento aprovado para o pedido {event["order_id"]}.'
     notification_queue.put(notification)
@@ -59,5 +55,5 @@ def notifications():
 
 if __name__ == "__main__":
     connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
-    start_event_consumers(RABBITMQ_HOST, CONSUMER_TOPICS)
-    app.run(debug=True, threaded=True, host="127.0.0.1", port=8000)
+    start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
+    app.run(debug=False, threaded=True, host="127.0.0.1", port=8000)

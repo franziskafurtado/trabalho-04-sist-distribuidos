@@ -1,62 +1,38 @@
-import json
 import time
-import pika
-from threading import Thread
+from myRabbit import *
 
 RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
-QUEUE_NAME_APPROVED = 'Pagamentos_Aprovados'
 QUEUE_NAME_SENT = 'Pedidos_Enviados'
 
-def publish_message(channel, routing_key, message):
-    channel.basic_publish(
-        exchange=EXCHANGE_NAME,
-        routing_key=routing_key,
-        body=json.dumps(message),
-        properties=pika.BasicProperties(content_type='application/json')
-    )
+def Pagamento_Aprovado(event):
+    print(f"Pagamento aprovado para o pedido {event['order_id']}.")
+    if gera_nota_fiscal(event):
+        processa_entrega(event)
+    else:
+        print("Erro ao gerar nota fiscal.")
 
-def process_approved_payment(ch, method, properties, event, channel):
-    order_id = event.get("order_id")
-    status = event.get("status")
+def gera_nota_fiscal(event):
+    print(f"Gerando nota fiscal para o pedido {event['order_id']}.")
+    return True
 
-    if not order_id or status != "aprovado":
-        print(f"Evento inválido ou status não aprovado: {event}")
-        ch.basic_ack(delivery_tag=method.delivery_tag)  # Marca como processado, mas inválido
-        return
-
-    print(f"Processando pagamento aprovado para o pedido {order_id}...")
-
-    # Simula a emissão de nota fiscal
-    time.sleep(2)
-    invoice_id = f"NF-{order_id:06d}" if str(order_id).isdigit() else f"NF-{order_id}"
-    print(f"Nota fiscal emitida: {invoice_id}")
-
-    # Simula o envio do pedido
+def processa_entrega(event):
+    print("Enviando pedido...")
     time.sleep(3)
-    print(f"Pedido enviado para o pedido {order_id}.")
+    print(f"Pedido {event['order_id']} enviado com sucesso.")
+    publish_message(channel, EXCHANGE_NAME, QUEUE_NAME_SENT, event)
 
-    # Publica o evento no tópico `Pedidos_Enviados`
-    sent_event = {
-        "order_id": order_id,
-        "invoice_id": invoice_id,
-        "status": "enviado"
-    }
-    publish_message(channel, QUEUE_NAME_SENT, sent_event)
-    print(f"Evento de envio publicado: {sent_event}")
-
-    # Confirma o processamento da mensagem
-    ch.basic_ack(delivery_tag=method.delivery_tag)
-
-def teste():
-    print('teste')  # Função de teste
-
+CONSUMER_TOPICS = [
+    {'queueName': 'Pagamentos_Aprovados', 'func': Pagamento_Aprovado}
+]
 
 if __name__ == "__main__":
-    init_rabbitmq()
-    start_event_consumers()
+    connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
+    start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
     try:
         while True:
-            time.sleep(1)
+            print("Aguardando eventos...")
+            time.sleep(10)
     except KeyboardInterrupt:
-        close_connection()
+        print("Encerrando consumidor de eventos...")
+        

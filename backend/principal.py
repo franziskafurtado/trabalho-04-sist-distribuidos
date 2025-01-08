@@ -15,6 +15,21 @@ EXCHANGE_NAME = 'ecommerce'
 QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
 
+def Pagamentos_Aprovados(event):
+    print(f'Pagamento aprovado para o pedido {event["order_id"]}.')
+
+def Pagamentos_Recusados(event):
+    print(f'Pagamento recusado para o pedido {event["order_id"]}.')
+
+def Pedidos_Enviados(event):    
+    print(f'Pedido {event["order_id"]} enviado com sucesso.')
+
+# Lista de tópicos específicos
+CONSUMER_TOPICS = [
+    {'queueName': 'Pagamentos_Aprovados', 'func': Pagamentos_Aprovados},
+    {'queueName': 'Pagamentos_Recusados', 'func': Pagamentos_Recusados},
+    {'queueName': 'Pedidos_Enviados', 'func': Pedidos_Enviados},
+]
 products = {
     1: {"name": "Teclado Mecânico", "price": 199.75},
     2: {"name": "Mouse Gamer", "price": 879.00},
@@ -75,7 +90,7 @@ def manage_orders():
         orders[order_id] = order
 
         # Publica evento para Pedidos_Criados
-        publish_message(channel, f'{QUEUE_NAME_CREATED}', {"order_id": order_id, **order})
+        publish_message(channel, EXCHANGE_NAME, QUEUE_NAME_CREATED, {"order_id": order_id, **order})
 
         # Adiciona à fila SSE
         sse_queue.put({"event": "order_created", "data": {"order_id": order_id, **order}})
@@ -92,7 +107,7 @@ def manage_orders():
             order = orders.pop(order_id)
 
             # Publica o evento para Pedidos_Excluídos
-            publish_message(channel ,f'{QUEUE_NAME_DELETED}', {"order_id": order_id, **order})
+            publish_message(channel, EXCHANGE_NAME, QUEUE_NAME_DELETED, {"order_id": order_id, **order})
 
             # Adiciona à fila SSE
             sse_queue.put({"event": "order_deleted", "data": {"order_id": order_id, **order}})
@@ -127,6 +142,7 @@ def save_cart():
 
 if __name__ == '__main__':
     connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
+    start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
     app.run(debug=True, threaded=True, port=5000)
 
     
