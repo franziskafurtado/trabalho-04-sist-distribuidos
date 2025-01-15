@@ -56,4 +56,4 @@ def get_product(product_id):
 if __name__ == "__main__":
     connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
     start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
-    app.run(debug=True, port=7000)
+    app.run(debug=True, port=5001)

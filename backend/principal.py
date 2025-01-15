@@ -1,11 +1,7 @@
 from flask import Flask, request, jsonify, Response, render_template, send_from_directory
-import pika
-import json
-from threading import Thread
 from queue import Queue
-import os
-import atexit
 from myRabbit import *
+import requests
 
 app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
 
@@ -14,6 +10,7 @@ RABBITMQ_HOST = 'localhost'
 EXCHANGE_NAME = 'ecommerce'
 QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
+INVENTORY_URL = "http://localhost:5001/inventory"
 
 def Pagamentos_Aprovados(event):
     print(f'Pagamento aprovado para o pedido {event["order_id"]}.')
@@ -139,10 +136,29 @@ def save_cart():
         return jsonify({"message": "Carrinho salvo com sucesso"}), 200
     else:
         return jsonify({"error": "Dados incompletos"}), 400
+    
+
+def fetch_inventory(id=None):
+    if id:
+        url = f"{INVENTORY_URL}/{id}"
+    else:
+        url = INVENTORY_URL
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            inventory = response.json()
+            print("Inventory:")
+            for item, quantity in inventory.items():
+                print(f"{item}: {quantity}")
+        else:
+            print(f"Erro: Status code {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao conectar ao servidor: {e}")
 
 if __name__ == '__main__':
     connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
     start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
+    fetch_inventory(3)
     app.run(debug=True, threaded=True, port=5000)
 
     
