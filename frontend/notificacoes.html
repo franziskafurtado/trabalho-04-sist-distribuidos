@@ -4,10 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemplo de SSE</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-pedidos.css">
 </head>
 <body>
-    <h1>Notificações</h1>
+    <header class="header">
+        <div class="logo">
+            <!-- Torna o logo um link para voltar ao index -->
+            <a href="index.html">
+                <img src="logo2.png" alt="Logo Loja Fran & Pedro">
+            </a>
+        </div>
+        <h1 class="titulo-pagina">Notificações</h1>
+        <nav>
+            <a href="carrinho.html">
+                <img src="carrinho.png" alt="Carrinho" class="icone-carrinho">
+            </a>
+        </nav>
+    </header>
+    <main>
     <div id="notifications"></div>
 
     <script>
@@ -26,5 +40,9 @@
             eventSource.close();
         };
     </script>
+        <footer class="footer">
+            <p>&copy; Loja Fran & Pedro</p>
+        </footer>
+    </main>
 </body>
 </html>
