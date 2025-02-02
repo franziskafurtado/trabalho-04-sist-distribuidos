@@ -1,5 +1,5 @@
 Para rodar o projeto é necessário instalar o Flask, o pika, o flask-cors, o chocolatey, o rabbitmq conforme:\**
-\**
+instalar o python\**
 pip install flask\**
 pip3 install pika\**
 pip install flask pika flask-cors\**
