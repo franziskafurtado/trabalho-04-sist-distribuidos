@@ -98,7 +98,7 @@ def manage_orders():
             "order_id": order_id,
             "user_id": user_id,
             "products": cart,
-            "status": "Criado"
+            "status": "Created"
         }
         orders[order_id] = order
 
@@ -111,6 +111,7 @@ def manage_orders():
         # Limpa o carrinho
         carts[user_id] = {}
         return jsonify(order)
+
 
     elif request.method == 'DELETE':
         data = request.json
