@@ -10,11 +10,11 @@ QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
 
 # Estoque inicial dos produtos
-inventory = {
-    1: {"name": "Teclado Mecânico", "stock": 50},
-    2: {"name": "Mouse Gamer", "stock": 30},
-    3: {"name": "Monitor Full HD", "stock": 20},
-    4: {"name": "Headset", "stock": 60}
+inventory = { #alterei as quantidades em estoque pra nao ficar ruim de testar
+    1: {"name": "Teclado Mecânico", "stock": 5},
+    2: {"name": "Mouse Gamer", "stock": 3},
+    3: {"name": "Monitor Full HD", "stock": 2},
+    4: {"name": "Headset", "stock": 3}
 }
 
 # Lógica para atualizar o estoque quando um pedido é criado

@@ -31,7 +31,7 @@ function carregarCarrinho() {
     totalDiv.classList.add('total');
     totalDiv.innerHTML = `
         <h3>Total: R$ ${total.toFixed(2).replace('.', ',')}</h3>
-        <button class="finalizar-compra">Realizar Pagamento</button>
+        <button class="finalizar-compra">Realizar pedido</button>
     `;
     secaoCarrinho.appendChild(totalDiv);
 
@@ -69,14 +69,18 @@ function adicionarEventos() {
 
     const inputsQuantidade = document.querySelectorAll('.quantidade');
     inputsQuantidade.forEach(input => input.addEventListener('change', atualizarQuantidade));
+
+    const botaoFinalizarCompra = document.querySelector('.finalizar-compra');
+    if (botaoFinalizarCompra) {
+        botaoFinalizarCompra.addEventListener('click', enviarCarrinhoAoBackend);
+    }
 }
 
-// Função para enviar o carrinho ao backend
 function enviarCarrinhoAoBackend() {
     const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
     const userId = 1; // Substitua pelo ID do usuário, se disponível
 
-    fetch('http://localhost:5000/save-cart', {
+    fetch('http://localhost:5000/orders', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -87,8 +91,20 @@ function enviarCarrinhoAoBackend() {
         }),
     })
     .then(response => response.json())
-    .then(data => console.log('Resposta do servidor:', data))
-    .catch(error => console.error('Erro ao enviar o carrinho:', error));
+    .then(data => {
+        console.log('Resposta do servidor:', data);
+        if (data.status === "Created") {
+            alert('Pedido realizado com sucesso! Aguarde a confirmação do pagamento.');
+        } else {
+            alert('Erro ao realizar o pedido. Tente novamente.');
+        }
+        localStorage.removeItem('carrinho'); // Limpa o carrinho
+        carregarCarrinho(); // Recarrega a exibição do carrinho
+    })
+    .catch(error => {
+        console.error('Erro ao enviar o carrinho:', error);
+        alert('Erro ao enviar o pedido. Tente novamente.');
+    });
 }
 
 // Inicializa a página

@@ -2,8 +2,11 @@ from flask import Flask, request, jsonify, Response, render_template, send_from_
 from queue import Queue
 from myRabbit import *
 import requests
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
+
+CORS(app)
 
 # Configuração do RabbitMQ
 RABBITMQ_HOST = 'localhost'
@@ -52,43 +55,56 @@ def serve_static(filename):
 def get_products():
     return jsonify(products)
 
-@app.route('/cart/<int:user_id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def manage_cart(user_id):
-    if request.method == 'GET':
-        return jsonify(carts.get(user_id, {}))
+@app.route('/inventory', methods=['GET'])
+def get_inventory():
+    try:
+        response = requests.get(INVENTORY_URL)
+        response.raise_for_status()  # Levanta exceção se houver erro na requisição
+        inventory = response.json()
+        return jsonify(inventory)
+    except requests.RequestException as e:
+        return jsonify({"error": f"Erro ao consultar o estoque: {e}"}), 500
+    
+# @app.route('/cart/<int:user_id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+# def manage_cart(user_id):
+#     if request.method == 'GET':
+#         return jsonify(carts.get(user_id, {}))
 
-    data = request.json
-    product_id = data['product_id']
-    quantity = data.get('quantity', 1)
+#     data = request.json
+#     product_id = data['product_id']
+#     quantity = data.get('quantity', 1)
 
-    if request.method == 'POST':
-        carts.setdefault(user_id, {}).setdefault(product_id, 0)
-        carts[user_id][product_id] += quantity
-    elif request.method == 'PUT':
-        if user_id in carts and product_id in carts[user_id]:
-            carts[user_id][product_id] = quantity
-    elif request.method == 'DELETE':
-        if user_id in carts and product_id in carts[user_id]:
-            del carts[user_id][product_id]
+#     if request.method == 'POST':
+#         carts.setdefault(user_id, {}).setdefault(product_id, 0)
+#         carts[user_id][product_id] += quantity
+        
+#     elif request.method == 'PUT':
+#         if user_id in carts and product_id in carts[user_id]:
+#             carts[user_id][product_id] = quantity
+#     elif request.method == 'DELETE':
+#         if user_id in carts and product_id in carts[user_id]:
+#             del carts[user_id][product_id]
 
-    return jsonify(carts.get(user_id, {}))
+#     return jsonify(carts.get(user_id, {}))
 
 @app.route('/orders', methods=['POST', 'DELETE'])
 def manage_orders():
     if request.method == 'POST':
         data = request.json
         user_id = data['user_id']
+        cart = data.get('cart', {})  # Carrinho enviado pelo frontend
         order_id = len(orders) + 1
         order = {
+            "order_id": order_id,
             "user_id": user_id,
-            "products": carts.get(user_id, {}),
-            "status": "Created"
+            "products": cart,
+            "status": "Criado"
         }
         orders[order_id] = order
 
         # Publica evento para Pedidos_Criados
         publish_message(channel, EXCHANGE_NAME, QUEUE_NAME_CREATED, {"order_id": order_id, **order})
-
+        
         # Adiciona à fila SSE
         sse_queue.put({"event": "order_created", "data": {"order_id": order_id, **order}})
 
@@ -113,6 +129,13 @@ def manage_orders():
         else:
             return jsonify({"error": "Order not found"}), 404
 
+# Rota para buscar pedidos de um usuário específico
+@app.route('/orders/user/<int:user_id>', methods=['GET'])
+def get_orders_by_user(user_id):
+    user_orders = {order_id: order for order_id, order in orders.items() if order['user_id'] == user_id}
+    return jsonify(user_orders)
+
+# Rota para buscar um pedido específico
 @app.route('/orders/<int:order_id>', methods=['GET'])
 def get_order(order_id):
     order = orders.get(order_id)
@@ -160,5 +183,3 @@ if __name__ == '__main__':
     start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
     fetch_inventory(3)
     app.run(debug=True, threaded=True, port=5000)
-
-    
