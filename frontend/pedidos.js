@@ -72,9 +72,11 @@ function renderizarPedidos(pedidos) {
 
 // Função para calcular o total de um pedido
 function calcularTotalPedido(produtos) {
-    return Object.entries(produtos).reduce((total, [productId, quantity]) => {
-        const preco = obterPrecoProduto(productId); // Substitua pela lógica para obter o preço do produto
-        return total + preco * quantity;
+    console.log("Produtos no pedido:", produtos); // Log para depuração
+    return produtos.reduce((total, produto) => {
+        const preco = parseFloat(produto.preco.replace('R$', '').replace(',', '.')); // Converte o preço para número
+        console.log(`Produto: ${produto.nome}, Quantidade: ${produto.quantidade}, Preço: ${preco}`); // Log para depuração
+        return total + preco * produto.quantidade;
     }, 0);
 }
 
