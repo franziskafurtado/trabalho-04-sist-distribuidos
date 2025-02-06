@@ -10,7 +10,7 @@ QUEUE_NAME_CREATED = 'Pedidos_Criados'
 QUEUE_NAME_DELETED = 'Pedidos_Excluídos'
 
 # Estoque inicial dos produtos
-inventory = { #alterei as quantidades em estoque pra nao ficar ruim de testar
+inventory = { 
     1: {"name": "Teclado Mecânico", "stock": 5},
     2: {"name": "Mouse Gamer", "stock": 3},
     3: {"name": "Monitor Full HD", "stock": 2},
@@ -20,19 +20,24 @@ inventory = { #alterei as quantidades em estoque pra nao ficar ruim de testar
 # Lógica para atualizar o estoque quando um pedido é criado
 def handle_order_created(event):
     products = event.get("products", {})
-    for product_id, quantity in products.items():
-        if product_id in inventory:
-            inventory[product_id]["stock"] -= quantity
-            inventory[product_id]["stock"] = max(0, inventory[product_id]["stock"])
-            print(f"Produto: {inventory[product_id]["name"]} retirado {quantity}, estoque atual {inventory[product_id]["stock"]} ")
+    for item in products:
+        for product_id, product_info in inventory.items():
+            if product_info["name"] == item["nome"]:
+                if product_info["stock"] >= item["quantidade"]:
+                    product_info["stock"] -= item["quantidade"]
+                    print(f"Produto: {item['nome']} retirado {item['quantidade']}, estoque atual {product_info['stock']} ")
+                else:
+                    print(f"Estoque insuficiente para {item['nome']}!")
 
 # Lógica para atualizar o estoque quando um pedido é excluído
 def handle_order_deleted(event):
     products = event.get("products", {})
-    for product_id, quantity in products.items():
-        if product_id in inventory:
-            inventory[product_id]["stock"] += quantity
-            print(f"Produto: {inventory[product_id]["name"]} adicionado {quantity}, estoque atual {inventory[product_id]["stock"]} ")
+    for item in products:
+        for product_id, product_info in inventory.items():
+            if product_info["name"] == item["nome"]:
+                if product_info["stock"] >= item["quantidade"]:
+                    product_info["stock"] += item["quantidade"]
+                    print(f"Produto: {inventory[product_id]["name"]} adicionado {quantity}, estoque atual {inventory[product_id]["stock"]} ")
 
 CONSUMER_TOPICS = [
     {'queueName': 'Pedidos_Criados', 'func': handle_order_created},
@@ -56,4 +61,4 @@ def get_product(product_id):
 if __name__ == "__main__":
     connection, channel = init_rabbitmq(RABBITMQ_HOST, EXCHANGE_NAME)
     start_event_consumers(RABBITMQ_HOST, EXCHANGE_NAME, CONSUMER_TOPICS)
-    app.run(debug=True, port=5001)
+    app.run(port=5001)

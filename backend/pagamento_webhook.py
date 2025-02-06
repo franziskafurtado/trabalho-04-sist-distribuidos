@@ -21,8 +21,8 @@ def process_payment(data):
     time.sleep(2)  # Simula o tempo de processamento
 
     # Determina o status do pagamento aleatoriamente
-    # status = random.choice(["autorizado", "recusado"])
-    status = "autorizado"
+    status = random.choice(["autorizado", "recusado"])
+    # status = "autorizado"
     data["status"] = status
     print(data)
     return data
