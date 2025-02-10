@@ -33,6 +33,8 @@ function renderizarPedidos(pedidos) {
     }
 
     pedidos.forEach((pedido) => {
+        const total = calcularTotalPedido(pedido.products); // Calcula o total do pedido
+
         const pedidoDiv = document.createElement('div');
         pedidoDiv.classList.add('pedido');
 
@@ -59,7 +61,7 @@ function renderizarPedidos(pedidos) {
         pedidoDiv.innerHTML = `
             <p><strong>Pedido #${pedido.order_id}</strong></p>
             <p>Data: ${new Date().toLocaleDateString()}</p>
-            <p>Total: R$ ${calcularTotalPedido(pedido.products).toFixed(2).replace('.', ',')}</p>
+            <p>Total: R$ ${total.toFixed(2).replace('.', ',')}</p>
             <p><strong class="${statusClass}">Status:</strong> ${pedido.status}</p>
             ${pedido.status === 'Created' || pedido.status === 'Payment Approved' ? '<button class="cancelar-pedido">Cancelar Pedido</button>' : ''}
         `;
@@ -72,23 +74,10 @@ function renderizarPedidos(pedidos) {
 
 // Função para calcular o total de um pedido
 function calcularTotalPedido(produtos) {
-    console.log("Produtos no pedido:", produtos); // Log para depuração
     return produtos.reduce((total, produto) => {
         const preco = parseFloat(produto.preco.replace('R$', '').replace(',', '.')); // Converte o preço para número
-        console.log(`Produto: ${produto.nome}, Quantidade: ${produto.quantidade}, Preço: ${preco}`); // Log para depuração
         return total + preco * produto.quantidade;
     }, 0);
-}
-
-// Função para obter o preço de um produto (exemplo)
-function obterPrecoProduto(productId) {
-    const produtos = {
-        1: 199.75, // Teclado Mecânico
-        2: 879.00, // Mouse Gamer
-        3: 1450.00, // Monitor Full HD
-        4: 110.00, // Headset
-    };
-    return produtos[productId] || 0;
 }
 
 // Função para adicionar eventos de cancelamento
