@@ -93,7 +93,7 @@ function enviarCarrinhoAoBackend() {
     .then(response => response.json())
     .then(data => {
         console.log('Resposta do servidor:', data);
-        if (data.status === "Created") {
+        if (data.status === "Criado") {
             alert('Pedido realizado com sucesso! Aguarde a confirmação do pagamento.');
         } else {
             alert('Erro ao realizar o pedido. Tente novamente.');

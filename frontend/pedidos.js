@@ -63,7 +63,10 @@ function renderizarPedidos(pedidos) {
             <p>Data: ${new Date().toLocaleDateString()}</p>
             <p>Total: R$ ${total.toFixed(2).replace('.', ',')}</p>
             <p><strong class="${statusClass}">Status:</strong> ${pedido.status}</p>
-            ${pedido.status === 'Created' || pedido.status === 'Payment Approved' ? '<button class="cancelar-pedido">Cancelar Pedido</button>' : ''}
+            ${
+                (pedido.status === 'Criado' || pedido.status === 'Payment Approved') ? 
+                `<button class="cancelar-pedido">Cancelar Pedido</button>` : ''
+            }
         `;
         secaoPedidos.appendChild(pedidoDiv);
     });
