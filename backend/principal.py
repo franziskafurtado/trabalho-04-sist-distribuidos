@@ -77,6 +77,37 @@ def get_inventory():
     except requests.RequestException as e:
         return jsonify({"error": f"Erro ao consultar o estoque: {e}"}), 500
 
+#funções que funcionam no back POST E GET, DELETE AINDA não está funcionando
+# @app.route('/cart', methods=['POST'])
+# def add_to_cart():
+#     data = request.json
+#     user_id = data.get("user_id")
+#     product_id = data.get("product_id")
+
+#     if not user_id or not product_id:
+#         return jsonify({"error": "user_id ou product_id não fornecido"}), 400
+
+#     if user_id not in carts:
+#         carts[user_id] = {}  # Inicializa o carrinho do usuário se ele ainda não existir
+
+#     if product_id in carts[user_id]:
+#         carts[user_id][product_id] += 1
+#     else:
+#         carts[user_id][product_id] = 1
+
+#     return jsonify({"message": "Produto adicionado ao carrinho", "cart": carts[user_id]}), 201
+
+# @app.route('/cart', methods=['GET'])
+# def get_cart():
+#     user_id = request.args.get('user_id', 'guest_user')  # Usa "guest_user" como padrão
+#     print(f"🔍 Buscando carrinho do usuário: {user_id}")
+
+#     # Garante que pega os dados corretos
+#     if user_id not in carts:
+#         user_id = 'guest_user'  # Se o ID não existir, usa "guest_user"
+
+#     return jsonify(carts.get(user_id, {}))  # Retorna o carrinho do usuário ou um dicionário vazio
+
 # 🛒 Gerenciamento de pedidos
 @app.route('/orders', methods=['POST', 'DELETE'])
 def manage_orders():
